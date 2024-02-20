@@ -1,9 +1,23 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table
 from sqlalchemy.orm import relationship
 import datetime
 
 from database import Base
 
+# Define association tables
+quote_tag_association = Table(
+    'quote_tag_association',
+    Base.metadata,
+    Column('quote_id', Integer, ForeignKey('quote.id')),
+    Column('tag_id', Integer, ForeignKey('tag.id'))
+)
+
+book_tag_association = Table(
+    'book_tag_association',
+    Base.metadata,
+    Column('book_id', Integer, ForeignKey('book.id')),
+    Column('tag_id', Integer, ForeignKey('tag.id'))
+)
 class User(Base):
     __tablename__ = "user"
     
