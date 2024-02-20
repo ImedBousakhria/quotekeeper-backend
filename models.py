@@ -1,11 +1,47 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy.orm import relationship
+import datetime
+
 from database import Base
 
-class Items(Base):
-    __tablename__ = "items"
+class User(Base):
+    __tablename__ = "user"
     
     id = Column(Integer, primary_key=True, index=True)
-    name= Column(String, unique=True, index=True)
-    category = Column(String)  
-    description = Column(String)
+    username = Column(String, unique=True, index=True)
+    password = Column(String)
+    email = Column(String)
     
+    quotes = relationship("user quotes",back_populates="user")
+    fav = relationship("user favs",back_populates="user")
+
+
+class Book(Base):
+    __tablename__ = "book"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, unique=True, index=True)
+    author = Column(String, index=True)
+    
+    quotes = relationship("book quotes",back_populates="book")
+    
+class Quote(Base):
+    __tablename__ = "quote"
+
+    
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user.id"))
+    book_id = Column(Integer, ForeignKey("book.id"))
+    quote_text = Column(String, index=True)
+    author = Column(String, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    image_url = Column(String)
+    
+    user = relationship("user quotes", back_populates="quote")
+    book = relationship("book quotes", back_populates="quote")
+    
+
+
+    
+
