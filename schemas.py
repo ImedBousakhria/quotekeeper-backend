@@ -57,6 +57,26 @@ class Quote(QuoteBase):
         orm_mode=True
         
 
+
+
+# Schemas for Book
+class BookBase(BaseModel):
+    title: str
+    author: str=Optional[str]
+    image_url: str
+    tags: Optional[list[Tag]]=[]
+
+class BookCreate(BookBase):
+    pass
+
+class Book(BookBase):
+    id: int
+    
+    class config:
+        orm_mode=True
+    
+    
+    
 # Schemas for User
 class UserBase(BaseModel):
     username: str
@@ -69,24 +89,9 @@ class User(UserBase):
     id: int
     quotes: list[Quote]=[]
     favs: list[Fav]=[]
+    books: list[Book] = []
     class config:
         orm_mode=True
         
         
-# Schemas for Book
-class BookBase(BaseModel):
-    title: str
-    author: str=Optional[str]
-    image_url: str
-    tags: list[Tag]=[]
 
-class BookCreate(BookBase):
-    pass
-
-class Book(BookBase):
-    id: int
-    
-    class config:
-        orm_mode=True
-    
-    
