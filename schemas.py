@@ -1,6 +1,62 @@
 from pydantic import BaseModel
 from typing import Optional, List
 
+
+
+
+
+# Tag schemas
+class TagBase(BaseModel):
+    name: str
+
+class TagCreate(TagBase):
+    pass
+
+class Tag(TagBase):
+    id: int
+    
+    class config:
+        orm_mode = True
+        
+
+
+# Fav schemas
+class FavBase(BaseModel):
+    user_id: int
+    quote_id: int
+
+class FavCreate(FavBase):
+    pass
+
+class Fav(FavBase):
+    id: int
+    
+    class config:
+        orm_mode = True
+    
+    
+# Schemas for Quote
+class QuoteBase(BaseModel):
+    quote_text: str
+    author: str
+    image_url: str=Optional[str]
+
+
+class QuoteCreate(QuoteBase):
+    tags: Optional[List[str]] = []
+
+    pass
+
+class Quote(QuoteBase):
+    id: int
+    user_id: int
+    book_id: int
+    tags: Optional[list[Tag]] = []
+
+    class config:
+        orm_mode=True
+        
+
 # Schemas for User
 class UserBase(BaseModel):
     username: str
@@ -22,6 +78,7 @@ class BookBase(BaseModel):
     title: str
     author: str=Optional[str]
     image_url: str
+    tags: list[Tag]=[]
 
 class BookCreate(BookBase):
     pass
@@ -33,25 +90,3 @@ class Book(BookBase):
         orm_mode=True
     
     
-# Schemas for Quote
-class QuoteBase(BaseModel):
-    quote_text: str
-    author: str
-    image_url: str=Optional[str]
-
-
-class QuoteCreate(QuoteBase):
-    tags: Optional[List[str]] = None
-
-    pass
-
-class Quote(QuoteBase):
-    id: int
-    user_id: int
-    book_id: int
-    tags: Optional[List[str]] = None
-
-    
-    class config:
-        orm_mode=True
-        
