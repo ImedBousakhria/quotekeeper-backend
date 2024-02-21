@@ -2,9 +2,6 @@ from pydantic import BaseModel
 from typing import Optional, List
 
 
-
-
-
 # Tag schemas
 class TagBase(BaseModel):
     name: str
@@ -63,7 +60,7 @@ class Quote(QuoteBase):
 class BookBase(BaseModel):
     title: str
     author: str=Optional[str]
-    image_url: str
+    image_url: str=Optional[str]
     tags: Optional[list[Tag]]=[]
 
 class BookCreate(BookBase):

@@ -35,11 +35,11 @@ class Book(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, unique=True, index=True)
-    author = Column(String, index=True)
-    image_url = Column(String)
+    author = Column(String, index=True, nullable=True)
+    image_url = Column(String, nullable=True)
 
-    quotes = relationship("Book",back_populates="book")
-    tag = relationship("Tag", secondary=book_tag_association, back_populates="book")
+    quotes = relationship("Quote",back_populates="book")
+    tags = relationship("Tag", secondary=book_tag_association, back_populates="books")
 
     
 class Quote(Base):
@@ -53,9 +53,9 @@ class Quote(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     image_url = Column(String, nullable=True)
     
-    user = relationship("User", back_populates="quote")
-    book = relationship("Book", back_populates="quote")
-    tag = relationship("Tag", secondary=quote_tag_association, back_populates="quote")
+    user = relationship("User", back_populates="quotes")
+    book = relationship("Book", back_populates="quotes")
+    tags = relationship("Tag", secondary=quote_tag_association, back_populates="quotes", nullable=True)
     
 
 class Tag(Base):
@@ -64,8 +64,8 @@ class Tag(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
 
-    quotes = relationship("Quote", secondary=quote_tag_association, back_populates="tag")
-    books = relationship("Book", secondary=book_tag_association, back_populates="tag")
+    quotes = relationship("Quote", secondary=quote_tag_association, back_populates="tags")
+    books = relationship("Book", secondary=book_tag_association, back_populates="tags")
 
 
 class Fav(Base):
