@@ -4,7 +4,7 @@ import datetime
 
 from database import Base
 
-# Define association tables
+# Define association tables (many-to-many)
 quote_tag_association = Table(
     'quote_tag_association',
     Base.metadata,
