@@ -19,12 +19,12 @@ def get_db():
         db.close()
         
 @routerBook.get('/all_books')
-async def show_books():
-    pass
+async def show_books(db:Session=Depends(get_db)):
+    return crud.show_books(db)
 
 @routerBook.post('/add_book')
-async def create_book():
-    pass
+async def create_book(book:schemas.BookCreate, db:Session=Depends(get_db)):
+    return crud.create_book(db, book)
 
 @routerBook.put('/update_book')
 async def update_book():
