@@ -55,7 +55,7 @@ class Quote(Base):
     
     user = relationship("User", back_populates="quotes")
     book = relationship("Book", back_populates="quotes")
-    tags = relationship("Tag", secondary=quote_tag_association, back_populates="quotes")
+    tags = relationship("Tag", secondary=quote_tag_association, back_populates="quotes", nullable=True)
     
 
 class Tag(Base):
