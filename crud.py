@@ -68,7 +68,7 @@ def delete_book(db: Session, book_id:int):
 # quote cruds
 def get_quotes(db: Session):
     quotes = db.query(models.Quote).all()
-    return [quote for quote in quotes]
+    return quotes
 
 def create_quote(db: Session, quote: schemas.QuoteCreate):
     new_quote = models.Quote(**quote.model_dump()) 
@@ -101,6 +101,21 @@ def delete_quote(db:Session, id:int):
     db.delete(result)
     db.commit()
     return {f"The quote {result.id} has been deleted."}
+
+def get_bookmarked_quotes(db: Session):
+    bookmarked = db.query(models.Quote).filter(models.Quote.bookmarked == True).all()
+    return bookmarked
+    
+    
+def bookmark_quote(db: Session, quote_id:int):
+    db_quote = db.query(models.Quote).filter(models.Quote.id == quote_id).one_or_none()
+    if db_quote is None:
+        return {"error":"no such quote"}
+    setattr(db_quote, "bookmarked", True)
+
+    db.commit()
+    db.refresh(db_quote)
+    return {"success":f"quote '{db_quote.id}' has been bookmarked"}
 
 
 
@@ -154,6 +169,9 @@ def get_bookmark(db:Session, bmid:int):
     
 # better practice is to add a "bookmarked" field in the quote model
 
+
+
+# user CRUDs
 # User register
 async def sign_up(db: Session, user: schemas.UserCreate):
     # Check if the user already exists
