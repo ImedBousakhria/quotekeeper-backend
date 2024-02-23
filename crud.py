@@ -1,6 +1,7 @@
 import models, schemas
 from sqlalchemy.orm import Session
 
+# book crud
 def show_books(db: Session):
     books = db.query(models.Book).all()
     return books
@@ -38,3 +39,38 @@ def delete_book(db: Session, book_id:int):
         return{f"The book {book.id} has been deleted"}
     else:
         return{"This Book ID does not exist."}
+    
+    
+# quote crud 
+
+def get_quotes(db: Session, book_id: int):
+    quotes = db.query(models.Quote).filter(models.Quote.book_id == book_id).all()
+    return [quote.to_schema() for quote in quotes]
+
+def create_quote(db: Session, book_id: int, data: schemas.QuoteCreate):
+    new_quote = models.Quote(**data.dict(), book_id=book_id) 
+    db.add(new_quote)
+    db.commit()
+    db.refresh(new_quote)
+    return {'ID of the created Quote': new_quote.id}
+
+def get_quote(db: Session, id: int):
+    quote = db.query(models.Quote).filter(models.Quote.id == id).first()
+    if not quote :
+        raise HTTPException(status_code=404, detail="Quote not found" )
+    return quote.to_schema()
+
+def update_quote(db: Session, id: int , data: dict):
+    quote = db.query(models.Quote).filter(models.Quote.id == id).update(data, synchronize_session='fetch')
+    if not quote :
+        raise HTTPException(status_code=404,detail="Quote not found")
+    db.commit()
+    return {"The quote has been updated."}
+
+def delete_quote(db:Session, id:int):
+    result = db.query(models.Quote).filter(models.Quote.id == id).delete()
+    if not result.rows:
+        raise HTTPException(status_code=404, detail="Quote not found")
+    db.commit()
+    return {"The quote has been deleted."}
+
