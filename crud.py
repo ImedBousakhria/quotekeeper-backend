@@ -113,9 +113,30 @@ def bookmark_quote(db: Session, quote_id:int):
         return {"error":"no such quote"}
     setattr(db_quote, "bookmarked", True)
 
+
     db.commit()
     db.refresh(db_quote)
     return {"success":f"quote '{db_quote.id}' has been bookmarked"}
+
+
+def unbookmark_quote(db: Session, quote_id:int):
+    db_quote = db.query(models.Quote).filter(models.Quote.id == quote_id).one_or_none()
+    if db_quote is None:
+        return {"error":"no such quote"}
+    setattr(db_quote, "bookmarked", False)
+
+    db.commit()
+    db.refresh(db_quote)
+    return {"success":f"quote '{db_quote.id}' has been bookmarked"}
+
+def search_quotes_by_term(db: Session, term: str):
+    return db.query(models.Quote).filter(
+        (
+            (models.Quote.quote_text.ilike(f"%{term}%")) |  # by quote text
+            (models.Quote.author.ilike(f"%{term}%"))       # by author
+        )
+    ).all()
+
 
 
 
