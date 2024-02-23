@@ -1,5 +1,6 @@
 import models, schemas
 from sqlalchemy.orm import Session
+from fastapi import HTTPException
 
 # book crud
 def show_books(db: Session):
@@ -41,36 +42,83 @@ def delete_book(db: Session, book_id:int):
         return{"This Book ID does not exist."}
     
     
-# quote crud 
+    
+    
+    
+    
+# quote cruds
+def get_quotes(db: Session):
+    quotes = db.query(models.Quote).all()
+    return [quote for quote in quotes]
 
-def get_quotes(db: Session, book_id: int):
-    quotes = db.query(models.Quote).filter(models.Quote.book_id == book_id).all()
-    return [quote.to_schema() for quote in quotes]
-
-def create_quote(db: Session, book_id: int, data: schemas.QuoteCreate):
-    new_quote = models.Quote(**data.dict(), book_id=book_id) 
+def create_quote(db: Session, quote: schemas.QuoteCreate):
+    new_quote = models.Quote(**quote.model_dump()) 
     db.add(new_quote)
     db.commit()
     db.refresh(new_quote)
     return {'ID of the created Quote': new_quote.id}
 
-def get_quote(db: Session, id: int):
-    quote = db.query(models.Quote).filter(models.Quote.id == id).first()
+def get_quote(db: Session, quote_id: int):
+    quote = db.query(models.Quote).filter(models.Quote.id == quote_id).first()
     if not quote :
         raise HTTPException(status_code=404, detail="Quote not found" )
-    return quote.to_schema()
+    return quote
 
-def update_quote(db: Session, id: int , data: dict):
-    quote = db.query(models.Quote).filter(models.Quote.id == id).update(data, synchronize_session='fetch')
+def update_quote(db: Session, id: int , data: schemas.QuoteCreate):
+    quote = db.query(models.Quote).filter(models.Quote.id == id).first()
     if not quote :
         raise HTTPException(status_code=404,detail="Quote not found")
-    db.commit()
-    return {"The quote has been updated."}
+    else:
+        for field, value in data.model_dump(exclude_unset=True).items():
+            setattr(quote, field, value)
+        db.commit()
+        db.refresh(quote)
+    return {f"The quote {quote.id} has been updated."}
 
 def delete_quote(db:Session, id:int):
-    result = db.query(models.Quote).filter(models.Quote.id == id).delete()
-    if not result.rows:
+    result = db.query(models.Quote).filter(models.Quote.id == id).first()
+    if not result:
         raise HTTPException(status_code=404, detail="Quote not found")
+    db.delete(result)
     db.commit()
-    return {"The quote has been deleted."}
+    return {f"The quote {result.id} has been deleted."}
+
+
+
+
+# tag cruds
+def get_tags(db: Session):
+    tags = db.query(models.Tag).all()
+    return {"total": len(tags), "data": tags}
+
+def create_tag(db: Session, tag: schemas.TagCreate):
+    new_tag = models.Tag(**tag.dict())
+    db.add(new_tag)
+    db.commit()
+    db.refresh(new_tag)
+    return {"ID of the created Tag": new_tag.id}
+
+def get_tag(db: Session, tag_id: int):
+    return db.query(models.Tag).filter(models.Tag.id==tag_id).first()
+
+def update_tag(db: Session, tag_id: int, tag: schemas.TagCreate):
+    tag_data = get_tag(db, tag_id)
+    if not tag_data:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    for key, value in tag.dict().items():
+        setattr(tag_data,key,value)
+    db.commit()
+    return {"Message":f"Updated {tag_id} Successfully"}
+
+def delete_tag(db: Session, tag_id: int):
+    data = get_tag(db, tag_id)
+    if not data:
+        raise HTTPException(status_code=404, detail="Tag not found")
+    db.delete(data)
+    db.commit()
+    return {"Message":f"Deleted {tag_id} Successfully"}
+
+# fav cruds
+def get_favs(db: Session):
+    return db.query(models.Tag).all()
 
