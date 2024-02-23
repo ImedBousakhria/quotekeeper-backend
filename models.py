@@ -34,6 +34,7 @@ class Book(Base):
     __tablename__ = "book"
     
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user.id"))
     title = Column(String, unique=True, index=True)
     author = Column(String, index=True, nullable=True)
     image_url = Column(String, nullable=True)
