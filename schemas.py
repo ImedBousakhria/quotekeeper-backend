@@ -67,6 +67,7 @@ class BookCreate(BookBase):
 
 class Book(BookBase):
     id: int
+    quotes: list[Quote]=[]
     
     class config:
         orm_mode=True
@@ -84,7 +85,7 @@ class UserCreate(UserBase):
 class User(UserBase):
     id: int
     quotes: list[Quote]=[]
-    favs: list[Fav]=[]
+    favs: List[Fav]=[]
     books: list[Book] = []
     class config:
         orm_mode=True
