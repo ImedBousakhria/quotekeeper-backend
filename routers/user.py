@@ -19,6 +19,22 @@ def get_db():
         db.close()
         
 @routerUser.post('/login')
-async def login(username:str=Body(...),password:str=Body(...),db:Session=Depends(get_db)):
-    admin=crud.login_admin(db,username,password)
-    return admin
+async def login(username:str,password:str,db:Session=Depends(get_db)):
+    return await crud.login(db,username=username,pwd=password)
+    
+
+@routerUser.post("/register")
+async def sign_up(user:schemas.UserCreate ,db:Session=Depends(get_db)):
+    # if the email already exists in the users table then it will not allow to create a new account with same email
+    # if the email already exists in the users table then it will not add a new row to the table
+    # and instead will return an error message saying that this email is already registered
+    # otherwise it will create a new user with the provided details
+    return await crud.sign_up(db=db,user=user)
+
+@routerUser.get("/users")
+async def get_all_users(db: Session = Depends(get_db)):
+    """
+    Retrieve all users from the database.
+    """
+    users = crud.get_all_users(db)
+    return users
