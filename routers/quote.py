@@ -45,3 +45,11 @@ async def update_quote(quote_id:int, quote_body: schemas.QuoteCreate, db:Session
 @routerQuote.delete('/delete_quote')
 async def delete_quote(quote_id:int, db:Session=Depends(get_db)):
     return crud.delete_quote(db, quote_id)
+
+@routerQuote.put('/bookmark_quote')
+async def bookmark_quote(quote_id:int, db:Session=Depends(get_db)):
+    return crud.bookmark_quote(db, quote_id)
+
+@routerQuote.get('/show_bookmarked')
+async def show_bookmarked(db:Session=Depends(get_db)):
+    return crud.get_bookmarked_quotes(db)
