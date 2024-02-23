@@ -1,11 +1,30 @@
-import models, schemas
+import models, schemas, auth
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from fastapi import HTTPException, Depends
 
 # book crud
 def show_books(db: Session):
     books = db.query(models.Book).all()
     return books
+
+def get_book(db: Session, book_id: int):
+    book = db.query(models.Book).filter(models.Book.id == book_id).first()
+    if not book :
+        raise HTTPException(status_code=404, detail="Book not found" )
+    return book
+
+
+def get_quotes_by_book(db: Session, book_id: int):
+    quotes = db.query(models.Quote).filter(models.Quote.book_id == book_id).all()
+    if not quotes :
+        raise HTTPException(status_code=404, detail="Quotes not found for this book" )
+    return quotes
+
+def get_quotes_by_user(db: Session, user_id: int):
+    quotes = db.query(models.Quote).filter(models.Quote.user_id == user_id).all()
+    if not quotes :
+        raise HTTPException(status_code=404, detail="Quotes not found for this user" )
+    return quotes
 
 def create_book(db:Session, book:schemas.BookCreate):
     new_book = models.Book(**book.model_dump())
@@ -118,7 +137,51 @@ def delete_tag(db: Session, tag_id: int):
     db.commit()
     return {"Message":f"Deleted {tag_id} Successfully"}
 
-# fav cruds
-def get_favs(db: Session):
-    return db.query(models.Tag).all()
 
+# bookmark CRUDs
+""" def get_bookmarks(db:Session):
+    return db.query(models.Fav).all()
+
+def create_bookmark(db: Session, fav:schemas.FavCreate):
+    new_bm = models.Fav(**fav.dict())
+    db.add(new_bm)
+    db.commit()
+    db.refresh(new_bm)
+    return {"ID of Bookmarked Quote":new_bm}
+
+def get_bookmark(db:Session, bmid:int):
+    return db.query(models.Fav).filter(models.Fav.id == bmid).first() """
+    
+# better practice is to add a "bookmarked" field in the quote model
+
+# User register
+async def sign_up(db: Session, user: schemas.UserCreate):
+    # Check if the user already exists
+    existing_user = await auth.get_user_by_username(user.username, db)
+    if existing_user:
+        raise HTTPException(status_code=400, detail="User already registered")
+    
+    # Create the user in the database
+    hashed_password = auth.get_password_hash(user.password)
+    new_user = models.User(username=user.username, password=hashed_password, email=user.email)
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return new_user
+
+# User login
+async def login( db: Session, username:str, pwd:str):
+    user = await auth.authenticate_user(username, pwd, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Incorrect username or password")
+    
+    # Create JWT token
+    access_token = auth.create_access_token(data={"sub": user.username})
+    return {"access_token": access_token, "user_id": user.id, "token_type": "bearer"}
+
+#users
+def get_all_users(db: Session):
+    """
+    Retrieve all users from the database.
+    """
+    return db.query(models.User).all()
