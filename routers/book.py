@@ -22,14 +22,18 @@ def get_db():
 async def show_books(db:Session=Depends(get_db)):
     return crud.show_books(db)
 
+@routerBook.get('/book')
+async def get_book(book_id: int, db:Session=Depends(get_db)):
+    return crud.get_book(db, book_id)
+
 @routerBook.post('/add_book')
 async def create_book(book:schemas.BookCreate, db:Session=Depends(get_db)):
     return crud.create_book(db, book)
 
 @routerBook.put('/update_book')
-async def update_book():
-    pass
+async def update_book(book:schemas.BookCreate, id_book:int, db:Session=Depends(get_db)):
+    return crud.update_book(db, id_book, book )
 
 @routerBook.delete('/delete_book')
-async def delete_book():
-    pass
+async def delete_book(id_book:int, db:Session=Depends(get_db)):
+    return crud.delete_book(db, id_book)
