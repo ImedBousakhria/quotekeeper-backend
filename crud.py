@@ -83,7 +83,7 @@ def get_quote(db: Session, quote_id: int):
         raise HTTPException(status_code=404, detail="Quote not found" )
     return quote
 
-def update_quote(db: Session, id: int , data: schemas.QuoteCreate):
+def update_quote(db: Session, id: int , data: schemas.QuoteBase):
     quote = db.query(models.Quote).filter(models.Quote.id == id).first()
     if not quote :
         raise HTTPException(status_code=404,detail="Quote not found")
