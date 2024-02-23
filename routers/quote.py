@@ -39,7 +39,7 @@ async def create_quote(quote:schemas.QuoteCreate, db:Session=Depends(get_db)):
     return crud.create_quote(db, quote)
 
 @routerQuote.put('/update_quote')
-async def update_quote(quote_id:int, quote_body: schemas.QuoteCreate, db:Session=Depends(get_db)):
+async def update_quote(quote_id:int, quote_body: schemas.QuoteBase, db:Session=Depends(get_db)):
     return crud.update_quote(db, quote_id, quote_body)
 
 @routerQuote.delete('/delete_quote')
