@@ -24,7 +24,7 @@ app.add_middleware(
 app.include_router(routerBook)
 app.include_router(routerUser)
 app.include_router(routerTag)
-app.include_router(routerFav)
+# app.include_router(routerFav)
 app.include_router(routerQuote)
 
 

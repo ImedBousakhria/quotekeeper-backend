@@ -26,6 +26,7 @@ class User(Base):
     password = Column(String)
     email = Column(String)
     
+    books = relationship("Book", back_populates="user")
     quotes = relationship("Quote",back_populates="user")
     fav = relationship("Fav",back_populates="user")
 
@@ -39,6 +40,7 @@ class Book(Base):
     author = Column(String, index=True, nullable=True)
     image_url = Column(String, nullable=True)
 
+    user = relationship("User", back_populates="books")
     quotes = relationship("Quote",back_populates="book")
     tags = relationship("Tag", secondary=book_tag_association, back_populates="books")
 
