@@ -37,13 +37,14 @@ class QuoteBase(BaseModel):
     quote_text: str
     author: str=Optional[str]
     image_url: str=Optional[str]
-    tags: Optional[list[str]] = []
+    tags: Optional[list[Tag]] = []
 
 
 
 class QuoteCreate(QuoteBase):
     user_id: int
     book_id: int
+    bookmarked: bool = False
 
 class Quote(QuoteBase):
     id: int
