@@ -31,16 +31,27 @@ class User(Base):
     fav = relationship("Fav",back_populates="user")
 
 
+class Author(Base):
+    __tablename__ = "author"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, index=True, unique=True)
+
+    books = relationship("Book", back_populates="author")
+    quotes = relationship("Quote", back_populates="author")
+
+
 class Book(Base):
     __tablename__ = "book"
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("user.id"))
+    author_id = Column(Integer, ForeignKey("author.id"))
     title = Column(String, unique=True, index=True)
-    author = Column(String, index=True, nullable=True)
     image_url = Column(String, nullable=True)
 
     user = relationship("User", back_populates="books")
+    author = relationship("Author", back_populates="books")
     quotes = relationship("Quote",back_populates="book")
     tags = relationship("Tag", secondary=book_tag_association, back_populates="books")
 
@@ -51,14 +62,15 @@ class Quote(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("user.id"))
     book_id = Column(Integer, ForeignKey("book.id"))
+    author_id = Column(Integer, ForeignKey("author.id"))
     quote_text = Column(String, index=True)
-    author = Column(String, index=True, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     image_url = Column(String, nullable=True)
     bookmarked=Column(Boolean, default=False)
 
     user = relationship("User", back_populates="quotes")
     book = relationship("Book", back_populates="quotes")
+    author = relationship("Author", back_populates="quotes")
     tags = relationship("Tag", secondary=quote_tag_association, back_populates="quotes")
     
 
@@ -71,16 +83,6 @@ class Tag(Base):
     quotes = relationship("Quote", secondary=quote_tag_association, back_populates="tags")
     books = relationship("Book", secondary=book_tag_association, back_populates="tags")
 
-
-# class Fav(Base):
-#     __tablename__ = "fav"
-    
-#     id = Column(Integer, primary_key=True, index=True)
-#     user_id = Column(Integer, ForeignKey("user.id"))
-#     quote_id = Column(Integer, ForeignKey("quote.id"))
-    
-#     user = relationship("User", back_populates="fav")
-    
 
 
     
