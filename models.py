@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table, Boolean
 from sqlalchemy.orm import relationship
 import datetime
 
@@ -55,7 +55,8 @@ class Quote(Base):
     author = Column(String, index=True, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     image_url = Column(String, nullable=True)
-    
+    bookmarked=Column(Boolean, default=False)
+
     user = relationship("User", back_populates="quotes")
     book = relationship("Book", back_populates="quotes")
     tags = relationship("Tag", secondary=quote_tag_association, back_populates="quotes")
@@ -71,14 +72,14 @@ class Tag(Base):
     books = relationship("Book", secondary=book_tag_association, back_populates="tags")
 
 
-class Fav(Base):
-    __tablename__ = "fav"
+# class Fav(Base):
+#     __tablename__ = "fav"
     
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("user.id"))
-    quote_id = Column(Integer, ForeignKey("quote.id"))
+#     id = Column(Integer, primary_key=True, index=True)
+#     user_id = Column(Integer, ForeignKey("user.id"))
+#     quote_id = Column(Integer, ForeignKey("quote.id"))
     
-    user = relationship("User", back_populates="fav")
+#     user = relationship("User", back_populates="fav")
     
 
 
