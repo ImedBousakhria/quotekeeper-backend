@@ -26,7 +26,7 @@ def get_quotes_by_user(db: Session, user_id: int):
         raise HTTPException(status_code=404, detail="Quotes not found for this user" )
     return quotes
 
-def create_book(db:Session, book:schemas.BookCreate):
+def create_book(db:Session, book:schemas.BookBase):
     new_book = models.Book(**book.model_dump())
     db.add(new_book)
     db.commit()
