@@ -76,8 +76,6 @@ class Fav(Base):
     quote_id = Column(Integer, ForeignKey("quote.id"))
     
     user = relationship("User", back_populates="fav")
-
-        
     
 
 
