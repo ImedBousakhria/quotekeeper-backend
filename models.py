@@ -28,7 +28,6 @@ class User(Base):
     
     books = relationship("Book", back_populates="user")
     quotes = relationship("Quote",back_populates="user")
-    fav = relationship("Fav",back_populates="user")
 
 
 # class Author(Base):
@@ -45,14 +44,12 @@ class Book(Base):
     __tablename__ = "book"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("user.id"))
-    # author_id = Column(Integer, ForeignKey("author.id"))
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     author = Column(String, nullable=True, index=True)
     title = Column(String, unique=True, index=True)
     image_url = Column(String, nullable=True)
 
     user = relationship("User", back_populates="books")
-    # author = relationship("Author", back_populates="books")
     quotes = relationship("Quote",back_populates="book")
     tags = relationship("Tag", secondary=book_tag_association, back_populates="books")
 
@@ -61,8 +58,8 @@ class Quote(Base):
     __tablename__ = "quote"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("user.id"))
-    book_id = Column(Integer, ForeignKey("book.id"))
+    user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
+    book_id = Column(Integer, ForeignKey("book.id"), nullable=False)
     # author_id = Column(Integer, ForeignKey("author.id"))
     author = Column(String, nullable=True, index=True)
     quote_text = Column(String, index=True)
