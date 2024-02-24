@@ -1,4 +1,4 @@
-from fastapi import Body, Depends,APIRouter,Cookie,Query
+from fastapi import Body, Depends,APIRouter, HTTPException
 from sqlalchemy.orm import Session
 
 from database import SessionLocal,engine 
@@ -36,11 +36,33 @@ async def get_quotes_by_user(user_id: int, db:Session=Depends(get_db)):
 
 @routerQuote.post('/add_quote')
 async def create_quote(quote:schemas.QuoteCreate, db:Session=Depends(get_db)):
+
+    if quote.book_id is not 0:
+        book = crud.get_book(db=db, book_id=quote.book_id)
+        if book is None:
+            raise HTTPException(status_code=404, detail="Book not found")
+
+    for tag_id in quote.tags:
+        tag = crud.get_tag(db=db, tag_id=tag_id)
+        if tag is None:
+            raise HTTPException(status_code=404, detail=f"Tag with ID {tag_id} not found")
+
     return crud.create_quote(db, quote)
 
 @routerQuote.put('/update_quote')
-async def update_quote(quote_id:int, quote_body: schemas.QuoteBase, db:Session=Depends(get_db)):
+async def update_quote(quote_id:int, quote_body: schemas.QuoteUpdate, db:Session=Depends(get_db)):
+    quote = crud.get_quote(db=db, quote_id=quote_id)
+    if quote is None:
+        raise HTTPException(status_code=404, detail="Quote not found")
+    
+    if quote_body.tags:
+        for tag_id in quote_body.tags:
+            tag = crud.get_tag(db=db, tag_id=tag_id)
+            if tag is None:
+                raise HTTPException(status_code=404, detail=f"Tag with ID {tag_id} not found")
+
     return crud.update_quote(db, quote_id, quote_body)
+
 
 @routerQuote.delete('/delete_quote')
 async def delete_quote(quote_id:int, db:Session=Depends(get_db)):

@@ -29,9 +29,6 @@ def update_book(db: Session, book_id: int, book: schemas.Book):
         return {"This Book ID does not exist"}
         
     updated_data = book.dict(exclude_unset=True)
-    # for field, value in new_competence.model_dump(exclude_unset=True).items():
-    #         setattr(db_old_competence, field, value)
-    # Update only the fields provided in the updated book object
     for key, value in updated_data.items():
         setattr(book_data, key, value)
 
@@ -58,21 +55,21 @@ def get_quotes(db: Session):
     return quotes
 
 def create_quote(db: Session, quote: schemas.QuoteCreate):
-    # Extract tags data from quote_data
-    # tags_data = quote.tags
-    # quote.tags = []
+    tag_ids = quote.tags
+    quote.tags = []
+
+    tags = []
+    for tag_id in tag_ids:
+        tag = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
+        if tag:
+            quote.tags.append(tag)
+            print(tag.name, tag.id)
+
     new_quote = models.Quote(**quote.model_dump())
     db.add(new_quote)
     db.commit()
     db.refresh(new_quote)
     
-    # for tag_data in tags_data:
-    #     tag = models.Tag(**tag_data.model_dump())
-    #     new_quote.tags.append(tag)
-
-    # db.commit()
-    # db.refresh(new_quote)
-
     return new_quote
 
 def get_quote(db: Session, quote_id: int):
@@ -81,36 +78,23 @@ def get_quote(db: Session, quote_id: int):
         raise HTTPException(status_code=404, detail="Quote not found" )
     return quote
 
-# def update_quote(db: Session, id: int , data: schemas.QuoteBase):
-#     quote = db.query(models.Quote).filter(models.Quote.id == id).first()
-#     if not quote :
-#         raise HTTPException(status_code=404,detail="Quote not found")
-#     else:
-#         for field, value in data.model_dump(exclude_unset=True).items():
-#             setattr(quote, field, value)
-#         db.commit()
-#         db.refresh(quote)
-#     return {f"The quote {quote.id} has been updated."}
-
-def update_quote(db: Session, id: int, data: schemas.QuoteBase):
+def update_quote(db: Session, id: int, data: schemas.QuoteUpdate):
     try:
         quote = db.query(models.Quote).filter(models.Quote.id == id).options(joinedload(models.Quote.tags)).one()
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Quote not found")
-
-    # tags_data = data.tags
-
-    # if tags_data is not None:
-    #     quote.tags = []
-    #     for tag_data in tags_data:
-    #         print(tag_data.id, tag_data.name)
-    #         tag = models.Tag(id=tag_data.id, name=tag_data.name)
-    #         quote.tags.append(tag)
         
     for field, value in data.dict(exclude={'tags'}).items():
         setattr(quote, field, value)
 
+    if data.tags is not None:
+        quote.tags = []
 
+        for tag_id in data.tags:
+            tag = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
+            if tag:
+                quote.tags.append(tag)
+                
     db.commit()
     db.refresh(quote)
 
