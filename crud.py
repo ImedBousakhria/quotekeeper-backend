@@ -3,8 +3,19 @@ from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 from sqlalchemy.orm.exc import NoResultFound
 import pytesseract
+import requests
 from PIL import Image
 from io import BytesIO
+
+def process_image(url):
+    response = requests.get(url)
+    img = Image.open(BytesIO(response.content))
+    text = pytesseract.image_to_string(img)
+    return text
+
+################################################
+
+
 
 # book crud
 def show_books(db: Session):
@@ -61,7 +72,6 @@ def create_quote(db: Session, quote: schemas.QuoteCreate):
     tag_ids = quote.tags
     quote.tags = []
 
-    tags = []
     for tag_id in tag_ids:
         tag = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
         if tag:
@@ -250,3 +260,7 @@ def get_all_users(db: Session):
 
     formatted_result = list(user_dict.values())
     return formatted_result
+
+
+
+
