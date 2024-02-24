@@ -37,7 +37,7 @@ class QuoteBase(BaseModel):
     quote_text: str
     author: str=Optional[str]
     image_url: str=Optional[str]
-    tags: Optional[List[Tag]] = []
+    tags: Optional[List[int]] = []
     bookmarked: bool = False
 
 

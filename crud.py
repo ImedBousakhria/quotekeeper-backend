@@ -59,19 +59,19 @@ def get_quotes(db: Session):
 
 def create_quote(db: Session, quote: schemas.QuoteCreate):
     # Extract tags data from quote_data
-    tags_data = quote.tags
-    quote.tags = []
+    # tags_data = quote.tags
+    # quote.tags = []
     new_quote = models.Quote(**quote.model_dump())
     db.add(new_quote)
     db.commit()
     db.refresh(new_quote)
     
-    for tag_data in tags_data:
-        tag = models.Tag(**tag_data.model_dump())
-        new_quote.tags.append(tag)
+    # for tag_data in tags_data:
+    #     tag = models.Tag(**tag_data.model_dump())
+    #     new_quote.tags.append(tag)
 
-    db.commit()
-    db.refresh(new_quote)
+    # db.commit()
+    # db.refresh(new_quote)
 
     return new_quote
 
@@ -98,14 +98,14 @@ def update_quote(db: Session, id: int, data: schemas.QuoteBase):
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Quote not found")
 
-    tags_data = data.tags
+    # tags_data = data.tags
 
-    if tags_data is not None:
-        quote.tags = []
-        for tag_data in tags_data:
-            print(tag_data.id, tag_data.name)
-            tag = models.Tag(id=tag_data.id, name=tag_data.name)
-            quote.tags.append(tag)
+    # if tags_data is not None:
+    #     quote.tags = []
+    #     for tag_data in tags_data:
+    #         print(tag_data.id, tag_data.name)
+    #         tag = models.Tag(id=tag_data.id, name=tag_data.name)
+    #         quote.tags.append(tag)
         
     for field, value in data.dict(exclude={'tags'}).items():
         setattr(quote, field, value)
@@ -158,7 +158,7 @@ def search_quotes_by_term(db: Session, term: str):
         (
             (models.Quote.quote_text.ilike(f"%{term}%")) |  # by quote text
             (models.Quote.author.ilike(f"%{term}%")) |      # by author
-            (models.Quote.tags.any(models.Tag.name.ilike(f"%{term}%")))  # by tagss
+            (models.Quote.tags.any(models.Tag.name.ilike(f"%{term}%")))  # by tags
         )
     ).options(joinedload(models.Quote.tags)).all()
 
@@ -181,7 +181,7 @@ def get_quotes_by_user(db: Session, user_id: int):
 # tag cruds
 def get_tags(db: Session):
     tags = db.query(models.Tag).all()
-    return {"total": len(tags), "data": tags}
+    return tags
 
 def create_tag(db: Session, tag: schemas.TagCreate):
     new_tag = models.Tag(**tag.dict())
