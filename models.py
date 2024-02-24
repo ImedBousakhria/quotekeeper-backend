@@ -48,7 +48,7 @@ class Quote(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
-    book_id = Column(Integer, ForeignKey("book.id"), nullable=False)
+    book_id = Column(Integer, ForeignKey("book.id"))
     author = Column(String, nullable=True, index=True)
     quote_text = Column(String, index=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
@@ -64,7 +64,7 @@ class Tag(Base):
     __tablename__ = "tag"
     
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, index=True)
+    name = Column(String, index=True)
 
     quotes = relationship("Quote", secondary=quote_tag_association, back_populates="tags")
     books = relationship("Book", secondary=book_tag_association, back_populates="tags")

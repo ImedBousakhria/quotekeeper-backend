@@ -45,7 +45,7 @@ class QuoteBase(BaseModel):
 
 class QuoteCreate(QuoteBase):
     user_id: int
-    book_id: int
+    book_id: Optional[int] = None
 
 class Quote(QuoteBase):
     id: int
