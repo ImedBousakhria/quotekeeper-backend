@@ -7,14 +7,15 @@ import requests
 from PIL import Image
 from io import BytesIO
 
+
+# utility function : img -> text
 def process_image(url):
     response = requests.get(url)
     img = Image.open(BytesIO(response.content))
     text = pytesseract.image_to_string(img)
     return text
 
-################################################
-
+###################################################
 
 
 # book crud
