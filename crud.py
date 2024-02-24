@@ -2,6 +2,9 @@ import models, schemas, auth
 from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException
 from sqlalchemy.orm.exc import NoResultFound
+import pytesseract
+from PIL import Image
+from io import BytesIO
 
 # book crud
 def show_books(db: Session):
