@@ -133,7 +133,7 @@ def search_quotes_by_term(db: Session, term: str):
         (
             (models.Quote.quote_text.ilike(f"%{term}%")) |  # by quote text
             (models.Quote.author.ilike(f"%{term}%")) |      # by author
-            (models.Quote.tags.any(models.Tag.name.ilike(f"%{term}%")))  # by tags
+            (models.Quote.tags.any(models.Tag.name.ilike(f"%{term}%")))  # by tagss
         )
     ).all()
 
