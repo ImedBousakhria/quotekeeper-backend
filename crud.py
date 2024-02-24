@@ -99,8 +99,8 @@ def delete_quote(db:Session, id:int):
     db.commit()
     return {f"The quote {result.id} has been deleted."}
 
-def get_bookmarked_quotes(db: Session):
-    bookmarked = db.query(models.Quote).filter(models.Quote.bookmarked == True).options(joinedload(models.Quote.tags)).all()
+def get_bookmarked_quotes(db: Session, user_id: int):
+    bookmarked = db.query(models.Quote).filter(models.Quote.bookmarked == True and models.Quote.user_id == user_id).options(joinedload(models.Quote.tags)).all()
     return bookmarked
     
     
