@@ -1,5 +1,5 @@
 import models, schemas, auth
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from fastapi import HTTPException, Depends
 
 # book crud
@@ -53,7 +53,7 @@ def delete_book(db: Session, book_id:int):
     
 # quote cruds
 def get_quotes(db: Session):
-    quotes = db.query(models.Quote).all()
+    quotes = db.query(models.Quote).options(joinedload(models.Quote.tags)).all()
     return quotes
 
 def create_quote(db: Session, quote: schemas.QuoteCreate):
@@ -100,7 +100,7 @@ def delete_quote(db:Session, id:int):
     return {f"The quote {result.id} has been deleted."}
 
 def get_bookmarked_quotes(db: Session):
-    bookmarked = db.query(models.Quote).filter(models.Quote.bookmarked == True).all()
+    bookmarked = db.query(models.Quote).filter(models.Quote.bookmarked == True).options(joinedload(models.Quote.tags)).all()
     return bookmarked
     
     
@@ -135,17 +135,17 @@ def search_quotes_by_term(db: Session, term: str):
             (models.Quote.author.ilike(f"%{term}%")) |      # by author
             (models.Quote.tags.any(models.Tag.name.ilike(f"%{term}%")))  # by tagss
         )
-    ).all()
+    ).options(joinedload(models.Quote.tags)).all()
 
 
 def get_quotes_by_book(db: Session, book_id: int):
-    quotes = db.query(models.Quote).filter(models.Quote.book_id == book_id).all()
+    quotes = db.query(models.Quote).filter(models.Quote.book_id == book_id).options(joinedload(models.Quote.tags)).all()
     if not quotes :
         raise HTTPException(status_code=404, detail="Quotes not found for this book" )
     return quotes
 
 def get_quotes_by_user(db: Session, user_id: int):
-    quotes = db.query(models.Quote).filter(models.Quote.user_id == user_id).all()
+    quotes = db.query(models.Quote).filter(models.Quote.user_id == user_id).options(joinedload(models.Quote.tags)).all()
     if not quotes :
         raise HTTPException(status_code=404, detail="Quotes not found for this user" )
     return quotes
