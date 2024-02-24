@@ -57,11 +57,22 @@ def get_quotes(db: Session):
     return quotes
 
 def create_quote(db: Session, quote: schemas.QuoteCreate):
-    new_quote = models.Quote(**quote.model_dump()) 
+    # Extract tags data from quote_data
+    tags_data = quote.tags
+    quote.tags = []
+    new_quote = models.Quote(**quote.model_dump())
     db.add(new_quote)
     db.commit()
     db.refresh(new_quote)
-    return {'ID of the created Quote': new_quote.id}
+    
+    for tag_data in tags_data:
+        tag = models.Tag(**tag_data.model_dump())
+        new_quote.tags.append(tag)
+
+    db.commit()
+    db.refresh(new_quote)
+
+    return new_quote
 
 def get_quote(db: Session, quote_id: int):
     quote = db.query(models.Quote).filter(models.Quote.id == quote_id).first()
@@ -115,12 +126,17 @@ def unbookmark_quote(db: Session, quote_id:int):
     return {"success":f"quote '{db_quote.id}' has been bookmarked"}
 
 def search_quotes_by_term(db: Session, term: str):
+    """
+    Search for quotes by text, author, or tags.
+    """
     return db.query(models.Quote).filter(
         (
             (models.Quote.quote_text.ilike(f"%{term}%")) |  # by quote text
-            (models.Quote.author.ilike(f"%{term}%"))       # by author
+            (models.Quote.author.ilike(f"%{term}%")) |      # by author
+            (models.Quote.tags.any(models.Tag.name.ilike(f"%{term}%")))  # by tags
         )
     ).all()
+
 
 def get_quotes_by_book(db: Session, book_id: int):
     quotes = db.query(models.Quote).filter(models.Quote.book_id == book_id).all()
