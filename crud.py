@@ -1,6 +1,7 @@
 import models, schemas, auth
 from sqlalchemy.orm import Session, joinedload
-from fastapi import HTTPException, Depends
+from fastapi import HTTPException
+from sqlalchemy.orm.exc import NoResultFound
 
 # book crud
 def show_books(db: Session):
@@ -75,20 +76,44 @@ def create_quote(db: Session, quote: schemas.QuoteCreate):
     return new_quote
 
 def get_quote(db: Session, quote_id: int):
-    quote = db.query(models.Quote).filter(models.Quote.id == quote_id).first()
+    quote = db.query(models.Quote).filter(models.Quote.id == quote_id).options(joinedload(models.Quote.tags)).first()
     if not quote :
         raise HTTPException(status_code=404, detail="Quote not found" )
     return quote
 
-def update_quote(db: Session, id: int , data: schemas.QuoteBase):
-    quote = db.query(models.Quote).filter(models.Quote.id == id).first()
-    if not quote :
-        raise HTTPException(status_code=404,detail="Quote not found")
-    else:
-        for field, value in data.model_dump(exclude_unset=True).items():
-            setattr(quote, field, value)
-        db.commit()
-        db.refresh(quote)
+# def update_quote(db: Session, id: int , data: schemas.QuoteBase):
+#     quote = db.query(models.Quote).filter(models.Quote.id == id).first()
+#     if not quote :
+#         raise HTTPException(status_code=404,detail="Quote not found")
+#     else:
+#         for field, value in data.model_dump(exclude_unset=True).items():
+#             setattr(quote, field, value)
+#         db.commit()
+#         db.refresh(quote)
+#     return {f"The quote {quote.id} has been updated."}
+
+def update_quote(db: Session, id: int, data: schemas.QuoteBase):
+    try:
+        quote = db.query(models.Quote).filter(models.Quote.id == id).options(joinedload(models.Quote.tags)).one()
+    except NoResultFound:
+        raise HTTPException(status_code=404, detail="Quote not found")
+
+    tags_data = data.tags
+
+    if tags_data is not None:
+        quote.tags = []
+        for tag_data in tags_data:
+            print(tag_data.id, tag_data.name)
+            tag = models.Tag(id=tag_data.id, name=tag_data.name)
+            quote.tags.append(tag)
+        
+    for field, value in data.dict(exclude={'tags'}).items():
+        setattr(quote, field, value)
+
+
+    db.commit()
+    db.refresh(quote)
+
     return {f"The quote {quote.id} has been updated."}
 
 def delete_quote(db:Session, id:int):

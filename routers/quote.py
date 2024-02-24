@@ -55,8 +55,8 @@ async def unbookmark_quote(quote_id:int, db:Session=Depends(get_db)):
     return crud.unbookmark_quote(db, quote_id)
 
 @routerQuote.get('/show_bookmarked')
-async def show_bookmarked(db:Session=Depends(get_db)):
-    return crud.get_bookmarked_quotes(db)
+async def show_bookmarked(user_id: int, db:Session=Depends(get_db)):
+    return crud.get_bookmarked_quotes(db, user_id)
 
 @routerQuote.get('/search_quotes')
 async def search_quotes(keyword:str, db:Session=Depends(get_db)):
