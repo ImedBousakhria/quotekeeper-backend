@@ -37,18 +37,22 @@ class QuoteBase(BaseModel):
     quote_text: str
     author: str=Optional[str]
     image_url: str=Optional[str]
-    tags: Optional[List[int]] = []
     bookmarked: bool = False
 
 
 
-
+class QuoteUpdate(QuoteBase):
+    tags: Optional[List[int]] = []
+    
 class QuoteCreate(QuoteBase):
     user_id: int
     book_id: Optional[int] = None
+    tags: Optional[List[int]] = []
+
 
 class Quote(QuoteBase):
     id: int
+    tags: Optional[List[Tag]] = []
 
     class config:
         orm_mode=True
@@ -60,7 +64,7 @@ class BookBase(BaseModel):
     title: str
     author: str
     image_url: str=Optional[str]
-    tags: Optional[List[Tag]]=[]
+    tags: Optional[List[int]]=[]
 
 class BookCreate(BookBase):
     user_id: int
