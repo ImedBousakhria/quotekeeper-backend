@@ -14,18 +14,6 @@ def get_book(db: Session, book_id: int):
     return book
 
 
-def get_quotes_by_book(db: Session, book_id: int):
-    quotes = db.query(models.Quote).filter(models.Quote.book_id == book_id).all()
-    if not quotes :
-        raise HTTPException(status_code=404, detail="Quotes not found for this book" )
-    return quotes
-
-def get_quotes_by_user(db: Session, user_id: int):
-    quotes = db.query(models.Quote).filter(models.Quote.user_id == user_id).all()
-    if not quotes :
-        raise HTTPException(status_code=404, detail="Quotes not found for this user" )
-    return quotes
-
 def create_book(db:Session, book:schemas.BookBase):
     new_book = models.Book(**book.model_dump())
     db.add(new_book)
@@ -60,10 +48,8 @@ def delete_book(db: Session, book_id:int):
     else:
         return{"This Book ID does not exist."}
     
-    
-    
-    
-    
+
+    ###################################################################    
     
 # quote cruds
 def get_quotes(db: Session):
@@ -113,7 +99,6 @@ def bookmark_quote(db: Session, quote_id:int):
         return {"error":"no such quote"}
     setattr(db_quote, "bookmarked", True)
 
-
     db.commit()
     db.refresh(db_quote)
     return {"success":f"quote '{db_quote.id}' has been bookmarked"}
@@ -137,9 +122,20 @@ def search_quotes_by_term(db: Session, term: str):
         )
     ).all()
 
+def get_quotes_by_book(db: Session, book_id: int):
+    quotes = db.query(models.Quote).filter(models.Quote.book_id == book_id).all()
+    if not quotes :
+        raise HTTPException(status_code=404, detail="Quotes not found for this book" )
+    return quotes
+
+def get_quotes_by_user(db: Session, user_id: int):
+    quotes = db.query(models.Quote).filter(models.Quote.user_id == user_id).all()
+    if not quotes :
+        raise HTTPException(status_code=404, detail="Quotes not found for this user" )
+    return quotes
 
 
-
+###################################################################
 
 # tag cruds
 def get_tags(db: Session):
@@ -174,22 +170,6 @@ def delete_tag(db: Session, tag_id: int):
     return {"Message":f"Deleted {tag_id} Successfully"}
 
 
-# bookmark CRUDs
-""" def get_bookmarks(db:Session):
-    return db.query(models.Fav).all()
-
-def create_bookmark(db: Session, fav:schemas.FavCreate):
-    new_bm = models.Fav(**fav.dict())
-    db.add(new_bm)
-    db.commit()
-    db.refresh(new_bm)
-    return {"ID of Bookmarked Quote":new_bm}
-
-def get_bookmark(db:Session, bmid:int):
-    return db.query(models.Fav).filter(models.Fav.id == bmid).first() """
-    
-# better practice is to add a "bookmarked" field in the quote model
-
 
 
 # user CRUDs
@@ -223,4 +203,22 @@ def get_all_users(db: Session):
     """
     Retrieve all users from the database.
     """
-    return db.query(models.User).all()
+    data = (db.query(models.User, models.Quote, models.Book)
+            .join(models.Quote, models.User.id == models.Quote.user_id)
+            .join(models.Book, models.User.id == models.Book.user_id)
+            .all())
+    
+    user_dict = {}
+
+    for user, quote, book in data:
+        if user.id not in user_dict:
+            user_dict[user.id] = {
+                "user": user,
+                "quotes": [],
+                "books": []
+            }
+        user_dict[user.id]["quotes"].append(quote)
+        user_dict[user.id]["books"].append(book)
+
+    formatted_result = list(user_dict.values())
+    return formatted_result
