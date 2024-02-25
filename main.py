@@ -20,10 +20,12 @@ app.add_middleware(
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
 )
-app.include_router(routerBook)
+
 app.include_router(routerUser)
-app.include_router(routerTag)
 app.include_router(routerQuote)
+app.include_router(routerBook)
+app.include_router(routerTag)
+
 
 
     
