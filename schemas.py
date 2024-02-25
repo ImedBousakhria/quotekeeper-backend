@@ -16,21 +16,6 @@ class Tag(TagBase):
         orm_mode = True
         
 
-
-# Fav schemas
-# class FavBase(BaseModel):
-#     user_id: int
-#     quote_id: int
-
-# class FavCreate(FavBase):
-#     pass
-
-# class Fav(FavBase):
-#     id: int
-    
-#     class config:
-#         orm_mode = True
-    
     
 # Schemas for Quote
 class QuoteBase(BaseModel):
