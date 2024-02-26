@@ -325,7 +325,8 @@ def create_new_user(db: Session, username: str, email: str):
     db.commit()
     return new_user
 
-# update user
+
+# update user profile, not including password change for now
 def update_user(db: Session, user_id: int, username: Optional[str]=None, email: Optional[str]=None):
     """
     Update information of an existing user. Raises an exception if the user does not exist.
