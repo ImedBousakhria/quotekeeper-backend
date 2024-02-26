@@ -270,25 +270,29 @@ def get_all_users(db: Session):
     """
     Retrieve all users from the database.
     """
-    data = (db.query(models.User, models.Quote, models.Book)
-            .join(models.Quote, models.User.id == models.Quote.user_id)
-            .join(models.Book, models.User.id == models.Book.user_id)
+    data = (db.query(models.User)
+            # .join(models.Quote, models.User.id == models.Quote.user_id)
+            # .join(models.Book, models.User.id == models.Book.user_id)
             .all())
     
-    user_dict = {}
+    '''
+    changing the join to get_quotes_by_user and get_books_by_user
+    '''
+    
+    # user_dict = {}
 
-    for user, quote, book in data:
-        if user.id not in user_dict:
-            user_dict[user.id] = {
-                "user": user,
-                "quotes": [],
-                "books": []
-            }
-        user_dict[user.id]["quotes"].append(quote)
-        user_dict[user.id]["books"].append(book)
-
-    formatted_result = list(user_dict.values())
-    return formatted_result
+    # for user, quote, book in data:
+    #     if user.id not in user_dict:
+    #         user_dict[user.id] = {
+    #             "user": user,
+    #             "quotes": [],
+    #             "books": []
+    #         }
+    #     user_dict[user.id]["quotes"].append(quote)
+    #     user_dict[user.id]["books"].append(book)
+    
+    # formatted_result = list(user_dict.values())
+    return data
 
 
 def get_user_by_id(db: Session, user_id: int):
@@ -306,8 +310,8 @@ def get_user_by_id(db: Session, user_id: int):
     quotes = db.query(models.Quote).filter(models.Quote.user_id==user_id).all()
     books = db.query(models.Book).filter(models.Book.user_id==user_id).all()
     #add to User object so that they can be serialized as JSON
-    result.quotes = [q.__dict__ for q in quotes]
-    result.books = [b.__dict__ for b in books] 
+    result.quotes = [q for q in quotes]
+    result.books = [b for b in books] 
       
     return result
 
