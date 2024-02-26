@@ -63,6 +63,15 @@ def delete_book(db: Session, book_id:int):
         return{"This Book ID does not exist."}
     
 
+def get_books_by_user(db: Session, user_id: int):
+    books = (db.query(models.Book)
+            .filter(models.Book.user_id == user_id)
+            .options(joinedload(models.Book.tags))
+            .all())
+    if not books :
+        raise HTTPException(status_code = 404, detail = "Books not found for this user" )
+    return books
+
     ###################################################################    
     
 # quote cruds
