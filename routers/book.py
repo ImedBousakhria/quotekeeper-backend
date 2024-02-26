@@ -37,3 +37,7 @@ async def update_book(book:schemas.BookBase, id_book:int, db:Session=Depends(get
 @routerBook.delete('/delete_book')
 async def delete_book(id_book:int, db:Session=Depends(get_db)):
     return crud.delete_book(db, id_book)
+
+@routerBook.get('/books_by_user')
+async def get_books_by_user(user_id: int, db:Session=Depends(get_db)):
+    return crud.get_books_by_user(db, user_id)
