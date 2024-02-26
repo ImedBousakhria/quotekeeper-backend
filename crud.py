@@ -77,7 +77,6 @@ def create_quote(db: Session, quote: schemas.QuoteCreate):
         tag = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
         if tag:
             quote.tags.append(tag)
-            print(tag.name, tag.id)
 
     new_quote = models.Quote(**quote.model_dump())
     db.add(new_quote)
@@ -87,14 +86,20 @@ def create_quote(db: Session, quote: schemas.QuoteCreate):
     return new_quote
 
 def get_quote(db: Session, quote_id: int):
-    quote = db.query(models.Quote).filter(models.Quote.id == quote_id).options(joinedload(models.Quote.tags)).first()
+    quote = (db.query(models.Quote)
+            .filter(models.Quote.id == quote_id)
+            .options(joinedload(models.Quote.tags))
+            .first())
     if not quote :
         raise HTTPException(status_code=404, detail="Quote not found" )
     return quote
 
 def update_quote(db: Session, id: int, data: schemas.QuoteUpdate):
     try:
-        quote = db.query(models.Quote).filter(models.Quote.id == id).options(joinedload(models.Quote.tags)).one()
+        quote = (db.query(models.Quote)
+                .filter(models.Quote.id == id)
+                .options(joinedload(models.Quote.tags))
+                .one())
     except NoResultFound:
         raise HTTPException(status_code=404, detail="Quote not found")
         
@@ -123,14 +128,17 @@ def delete_quote(db:Session, id:int):
     return {f"The quote {result.id} has been deleted."}
 
 def get_bookmarked_quotes(db: Session, user_id: int):
-    bookmarked = db.query(models.Quote).filter(models.Quote.bookmarked == True and models.Quote.user_id == user_id).options(joinedload(models.Quote.tags)).all()
+    bookmarked = (db.query(models.Quote)
+                .filter(models.Quote.bookmarked == True and models.Quote.user_id == user_id)
+                .options(joinedload(models.Quote.tags))
+                .all())
     return bookmarked
     
     
 def bookmark_quote(db: Session, quote_id:int):
     db_quote = db.query(models.Quote).filter(models.Quote.id == quote_id).one_or_none()
     if db_quote is None:
-        return {"error":"no such quote"}
+        return {"error" : "no such quote"}
     setattr(db_quote, "bookmarked", True)
 
     db.commit()
@@ -141,7 +149,7 @@ def bookmark_quote(db: Session, quote_id:int):
 def unbookmark_quote(db: Session, quote_id:int):
     db_quote = db.query(models.Quote).filter(models.Quote.id == quote_id).one_or_none()
     if db_quote is None:
-        return {"error":"no such quote"}
+        return {"error" : "no such quote"}
     setattr(db_quote, "bookmarked", False)
 
     db.commit()
@@ -162,15 +170,22 @@ def search_quotes_by_term(db: Session, term: str):
 
 
 def get_quotes_by_book(db: Session, book_id: int):
-    quotes = db.query(models.Quote).filter(models.Quote.book_id == book_id).options(joinedload(models.Quote.tags)).all()
+    quotes = (db.query(models.Quote)
+            .filter(models.Quote.book_id == book_id)
+            .options(joinedload(models.Quote.tags))
+            .all())
     if not quotes :
-        raise HTTPException(status_code=404, detail="Quotes not found for this book" )
+        raise HTTPException(status_code = 404, detail = "Quotes not found for this book" )
     return quotes
 
+
 def get_quotes_by_user(db: Session, user_id: int):
-    quotes = db.query(models.Quote).filter(models.Quote.user_id == user_id).options(joinedload(models.Quote.tags)).all()
+    quotes = (db.query(models.Quote)
+            .filter(models.Quote.user_id == user_id)
+            .options(joinedload(models.Quote.tags))
+            .all())
     if not quotes :
-        raise HTTPException(status_code=404, detail="Quotes not found for this user" )
+        raise HTTPException(status_code = 404, detail = "Quotes not found for this user" )
     return quotes
 
 
@@ -194,7 +209,7 @@ def get_tag(db: Session, tag_id: int):
 def update_tag(db: Session, tag_id: int, tag: schemas.TagCreate):
     tag_data = get_tag(db, tag_id)
     if not tag_data:
-        raise HTTPException(status_code=404, detail="Tag not found")
+        raise HTTPException(status_code = 404, detail = "Tag not found")
     for key, value in tag.dict().items():
         setattr(tag_data,key,value)
     db.commit()
@@ -203,7 +218,7 @@ def update_tag(db: Session, tag_id: int, tag: schemas.TagCreate):
 def delete_tag(db: Session, tag_id: int):
     data = get_tag(db, tag_id)
     if not data:
-        raise HTTPException(status_code=404, detail="Tag not found")
+        raise HTTPException(status_code = 404, detail = "Tag not found")
     db.delete(data)
     db.commit()
     return {"Message":f"Deleted {tag_id} Successfully"}
@@ -217,11 +232,11 @@ async def sign_up(db: Session, user: schemas.UserCreate):
     # Check if the user already exists
     existing_user = await auth.get_user_by_username(user.username, db)
     if existing_user:
-        raise HTTPException(status_code=400, detail="User already registered")
+        raise HTTPException(status_code = 400, detail = "User already registered")
     
     # Create the user in the database
     hashed_password = auth.get_password_hash(user.password)
-    new_user = models.User(username=user.username, password=hashed_password, email=user.email)
+    new_user = models.User(username = user.username, password = hashed_password, email = user.email)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -231,10 +246,10 @@ async def sign_up(db: Session, user: schemas.UserCreate):
 async def login( db: Session, username:str, pwd:str):
     user = await auth.authenticate_user(username, pwd, db)
     if not user:
-        raise HTTPException(status_code=401, detail="Incorrect username or password")
+        raise HTTPException(status_code = 401, detail = "Incorrect username or password")
     
     # Create JWT token
-    access_token = auth.create_access_token(data={"sub": user.username})
+    access_token = auth.create_access_token(data = {"sub": user.username})
     return {"access_token": access_token, "user_id": user.id, "token_type": "bearer"}
 
 #users
@@ -261,7 +276,3 @@ def get_all_users(db: Session):
 
     formatted_result = list(user_dict.values())
     return formatted_result
-
-
-
-

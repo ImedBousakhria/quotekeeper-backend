@@ -1,7 +1,6 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 import models
-from sqlalchemy.orm import Session
-from database import SessionLocal, engine
+from database import engine
 from fastapi.middleware.cors import CORSMiddleware
 from routers.book import routerBook
 from routers.quote import routerQuote
@@ -25,7 +24,3 @@ app.include_router(routerUser)
 app.include_router(routerQuote)
 app.include_router(routerBook)
 app.include_router(routerTag)
-
-
-
-    

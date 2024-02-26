@@ -1,7 +1,7 @@
-from fastapi import Body, Depends,APIRouter,Cookie,Query
+from fastapi import Depends,APIRouter
 from sqlalchemy.orm import Session
 
-from database import SessionLocal,engine 
+from database import SessionLocal
 import crud
 from database import SessionLocal
 import schemas
@@ -37,4 +37,3 @@ async def update_book(book:schemas.BookBase, id_book:int, db:Session=Depends(get
 @routerBook.delete('/delete_book')
 async def delete_book(id_book:int, db:Session=Depends(get_db)):
     return crud.delete_book(db, id_book)
-
