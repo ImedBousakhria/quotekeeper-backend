@@ -69,6 +69,7 @@ def get_quotes(db: Session):
     quotes = db.query(models.Quote).options(joinedload(models.Quote.tags)).all()
     return quotes
 
+
 def create_quote(db: Session, quote: schemas.QuoteCreate):
     tag_ids = quote.tags
     quote.tags = []
@@ -85,6 +86,7 @@ def create_quote(db: Session, quote: schemas.QuoteCreate):
     
     return new_quote
 
+
 def get_quote(db: Session, quote_id: int):
     quote = (db.query(models.Quote)
             .filter(models.Quote.id == quote_id)
@@ -93,6 +95,7 @@ def get_quote(db: Session, quote_id: int):
     if not quote :
         raise HTTPException(status_code=404, detail="Quote not found" )
     return quote
+
 
 def update_quote(db: Session, id: int, data: schemas.QuoteUpdate):
     try:
@@ -119,6 +122,7 @@ def update_quote(db: Session, id: int, data: schemas.QuoteUpdate):
 
     return {f"The quote {quote.id} has been updated."}
 
+
 def delete_quote(db:Session, id:int):
     result = db.query(models.Quote).filter(models.Quote.id == id).first()
     if not result:
@@ -126,6 +130,7 @@ def delete_quote(db:Session, id:int):
     db.delete(result)
     db.commit()
     return {f"The quote {result.id} has been deleted."}
+
 
 def get_bookmarked_quotes(db: Session, user_id: int):
     bookmarked = (db.query(models.Quote)
@@ -155,6 +160,7 @@ def unbookmark_quote(db: Session, quote_id:int):
     db.commit()
     db.refresh(db_quote)
     return {"success":f"quote '{db_quote.id}' has been bookmarked"}
+
 
 def search_quotes_by_term(db: Session, term: str):
     """
@@ -196,6 +202,7 @@ def get_tags(db: Session):
     tags = db.query(models.Tag).all()
     return tags
 
+
 def create_tag(db: Session, tag: schemas.TagCreate):
     new_tag = models.Tag(**tag.dict())
     db.add(new_tag)
@@ -203,8 +210,10 @@ def create_tag(db: Session, tag: schemas.TagCreate):
     db.refresh(new_tag)
     return {"ID of the created Tag": new_tag.id}
 
+
 def get_tag(db: Session, tag_id: int):
     return db.query(models.Tag).filter(models.Tag.id==tag_id).first()
+
 
 def update_tag(db: Session, tag_id: int, tag: schemas.TagCreate):
     tag_data = get_tag(db, tag_id)
@@ -214,6 +223,7 @@ def update_tag(db: Session, tag_id: int, tag: schemas.TagCreate):
         setattr(tag_data,key,value)
     db.commit()
     return {"Message":f"Updated {tag_id} Successfully"}
+
 
 def delete_tag(db: Session, tag_id: int):
     data = get_tag(db, tag_id)
@@ -242,6 +252,7 @@ async def sign_up(db: Session, user: schemas.UserCreate):
     db.refresh(new_user)
     return new_user
 
+
 # User login
 async def login( db: Session, username:str, pwd:str):
     user = await auth.authenticate_user(username, pwd, db)
@@ -251,6 +262,7 @@ async def login( db: Session, username:str, pwd:str):
     # Create JWT token
     access_token = auth.create_access_token(data = {"sub": user.username})
     return {"access_token": access_token, "user_id": user.id, "token_type": "bearer"}
+
 
 #users
 def get_all_users(db: Session):
@@ -276,3 +288,60 @@ def get_all_users(db: Session):
 
     formatted_result = list(user_dict.values())
     return formatted_result
+
+
+def get_user_by_id(db: Session, user_id: int):
+    """
+    Get a specific user by their ID. If no such user is found, it returns None.
+    """
+    result = (db.query(models.User)
+              .filter(models.User.id == user_id)
+              .first())
+              
+    if result is None:
+        raise HTTPException(status_code=404, detail="No user with this id")
+        
+    #get associated quotes and books
+    quotes = db.query(models.Quote).filter(models.Quote.user_id==user_id).all()
+    books = db.query(models.Book).filter(models.Book.user_id==user_id).all()
+    #add to User object so that they can be serialized as JSON
+    result.quotes = [q.__dict__ for q in quotes]
+    result.books = [b.__dict__ for b in books] 
+      
+    return result
+
+
+def create_new_user(db: Session, username: str, email: str):
+    """
+    Create a new user. Returns the created user on success or raises an exception if the user already exists.
+    """
+    existing_users = db.query(models.User).filter(models.User.email == email).count()
+  
+    if existing_users >  0:
+        raise HTTPException(status_code=400, detail="Email address already registered.")
+    
+    new_user = models.User(username=username, email=email)
+    db.add(new_user)
+    db.commit()
+    return new_user
+
+# update user
+def update_user(db: Session, user_id: int, username: Optional[str]=None, email: Optional[str]=None):
+    """
+    Update information of an existing user. Raises an exception if the user does not exist.
+    """
+    user = get_user_by_id(db, user_id)
+
+    if username is not None:
+        user.username = username
+        if email is not None:
+            user.email = email
+        else:
+            raise ValueError("Must provide both username and email when updating email")
+    elif email is not None:
+        user.email = email
+    else:
+        raise ValueError("Must provide at least one field to update")
+        
+    db.commit()
+    return user
