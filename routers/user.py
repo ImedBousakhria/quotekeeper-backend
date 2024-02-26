@@ -38,3 +38,19 @@ async def get_all_users(db: Session = Depends(get_db)):
     """
     users = crud.get_all_users(db)
     return users
+
+@routerUser.get("/user")
+async def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
+    """
+    Retrieve a user by id from the database.
+    """
+    user = crud.get_user_by_id(db, user_id)
+    return user
+
+@routerUser.put("/user")
+async def update_user(user_id: int, username: str, email:str, db: Session = Depends(get_db)):
+    """
+    update a user in the database.
+    """
+    user = crud.update_user(db, user_id, username, email)
+    return user
