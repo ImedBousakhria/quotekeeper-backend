@@ -6,6 +6,7 @@ import pytesseract
 import requests
 from PIL import Image
 from io import BytesIO
+from typing import Optional
 
 
 # utility function : img -> text
