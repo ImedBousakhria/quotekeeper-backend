@@ -95,7 +95,7 @@ def search_books_by_term(db: Session, term: str):
     """
     Search for books by text, author, or tags.
     """
-    return db.query(models.Quote).filter(
+    return db.query(models.Book).filter(
         (
             (models.Book.title.ilike(f"%{term}%")) |  # by quote text
             (models.Book.author.ilike(f"%{term}%")) |      # by author
