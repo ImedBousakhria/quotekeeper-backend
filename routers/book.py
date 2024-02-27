@@ -41,3 +41,7 @@ async def delete_book(id_book:int, db:Session=Depends(get_db)):
 @routerBook.get('/books_by_user')
 async def get_books_by_user(user_id: int, db:Session=Depends(get_db)):
     return crud.get_books_by_user(db, user_id)
+
+@routerBook.get('/search_books')
+async def search_books(keyword:str, db:Session=Depends(get_db)):
+    return crud.search_books_by_term(db, keyword)
