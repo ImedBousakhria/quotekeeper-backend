@@ -52,7 +52,7 @@ def update_book(db: Session, book_id: int, book: schemas.Book):
     if not book_data:
         return {"This Book ID does not exist"}
         
-    updated_data = book.dict(exclude_unset=True)
+    updated_data = book.dict(exclude={'tags'}).items()
     for key, value in updated_data.items():
         setattr(book_data, key, value)
 
