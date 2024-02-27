@@ -21,11 +21,14 @@ def process_image(url):
 
 # book crud
 def show_books(db: Session):
-    books = db.query(models.Book).all()
+    books = db.query(models.Book).options(joinedload(models.Book.tags)).all()
     return books
 
 def get_book(db: Session, book_id: int):
-    book = db.query(models.Book).filter(models.Book.id == book_id).first()
+    book = (db.query(models.Book)
+            .filter(models.Book.id == book_id)
+            .options(joinedload(models.Book.tags))
+            .first())
     if not book :
         raise HTTPException(status_code=404, detail="Book not found" )
     return book
