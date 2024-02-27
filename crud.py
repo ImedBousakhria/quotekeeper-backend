@@ -40,7 +40,6 @@ def create_book(db:Session, book:schemas.BookBase):
         if tag:
             book.tags.append(tag)
 
-    new_quote = models.Quote(**quote.model_dump())
     new_book = models.Book(**book.model_dump())
     db.add(new_book)
     db.commit()
@@ -57,6 +56,13 @@ def update_book(db: Session, book_id: int, book: schemas.Book):
     for key, value in updated_data.items():
         setattr(book_data, key, value)
 
+    if book_data.tags is not None:
+        book.tags = []
+
+        for tag_id in book.tags:
+            tag = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
+            if tag:
+                book.tags.append(tag)
     db.commit()
     db.refresh(book_data)
     return {f'The book {book_data.id} has been successfully updated'}  
