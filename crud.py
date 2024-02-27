@@ -32,6 +32,15 @@ def get_book(db: Session, book_id: int):
 
 
 def create_book(db:Session, book:schemas.BookBase):
+    tag_ids = book.tags
+    book.tags = []
+
+    for tag_id in tag_ids:
+        tag = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
+        if tag:
+            book.tags.append(tag)
+
+    new_quote = models.Quote(**quote.model_dump())
     new_book = models.Book(**book.model_dump())
     db.add(new_book)
     db.commit()
@@ -71,6 +80,19 @@ def get_books_by_user(db: Session, user_id: int):
     if not books :
         raise HTTPException(status_code = 404, detail = "Books not found for this user" )
     return books
+
+
+def search_books_by_term(db: Session, term: str):
+    """
+    Search for books by text, author, or tags.
+    """
+    return db.query(models.Quote).filter(
+        (
+            (models.Book.title.ilike(f"%{term}%")) |  # by quote text
+            (models.Book.author.ilike(f"%{term}%")) |      # by author
+            (models.Book.tags.any(models.Tag.name.ilike(f"%{term}%")))  # by tags
+        )
+    ).options(joinedload(models.Book.tags)).all()
 
     ###################################################################    
     
