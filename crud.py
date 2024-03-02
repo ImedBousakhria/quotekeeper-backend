@@ -114,12 +114,16 @@ def get_quotes(db: Session):
 def create_quote(db: Session, quote: schemas.QuoteCreate):
     tag_ids = quote.tags
     quote.tags = []
-
     for tag_id in tag_ids:
         tag = db.query(models.Tag).filter(models.Tag.id == tag_id).first()
         if tag:
             quote.tags.append(tag)
 
+    # quote from img 
+    if quote.image_url is not None:
+        text_from_image = process_image(quote.image_url)
+        quote.quote_text += "\n" + text_from_image
+        
     new_quote = models.Quote(**quote.model_dump())
     db.add(new_quote)
     db.commit()
@@ -316,7 +320,7 @@ def get_all_users(db: Session):
             .all())
     
     '''
-    changing the join to get_quotes_by_user and get_books_by_user
+    changing the join to get_quotes_by_user and get_books_by_user instead , to not overload the GET ALL USERS
     '''
     
     # user_dict = {}
@@ -340,9 +344,9 @@ def get_user_by_id(db: Session, user_id: int):
     Get a specific user by their ID. If no such user is found, it returns None.
     """
     result = (db.query(models.User)
-              .filter(models.User.id == user_id)
-              .first())
-              
+            .filter(models.User.id == user_id)
+            .first())
+            
     if result is None:
         raise HTTPException(status_code=404, detail="No user with this id")
         
@@ -350,34 +354,21 @@ def get_user_by_id(db: Session, user_id: int):
     quotes = db.query(models.Quote).filter(models.Quote.user_id==user_id).all()
     books = db.query(models.Book).filter(models.Book.user_id==user_id).all()
     #add to User object so that they can be serialized as JSON
-    result.quotes = [q for q in quotes]
-    result.books = [b for b in books] 
-      
+    result.quotes = quotes
+    result.books = books 
+    
     return result
 
 
-def create_new_user(db: Session, username: str, email: str):
-    """
-    Create a new user. Returns the created user on success or raises an exception if the user already exists.
-    """
-    existing_users = db.query(models.User).filter(models.User.email == email).count()
-  
-    if existing_users >  0:
-        raise HTTPException(status_code=400, detail="Email address already registered.")
-    
-    new_user = models.User(username=username, email=email)
-    db.add(new_user)
-    db.commit()
-    return new_user
-
-
 # update user profile, not including password change for now
-def update_user(db: Session, user_id: int, username: Optional[str]=None, email: Optional[str]=None):
+def update_user(db: Session, user_id: int, username: Optional[str]=None, email: Optional[str]=None, password: str=None):
     """
     Update information of an existing user. Raises an exception if the user does not exist.
     """
     user = get_user_by_id(db, user_id)
-
+    if password is not None:
+        
+        user.password = auth.get_password_hash(password)
     if username is not None:
         user.username = username
         if email is not None:
