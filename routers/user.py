@@ -48,9 +48,9 @@ async def get_user_by_id(user_id: int, db: Session = Depends(get_db)):
     return user
 
 @routerUser.put("/user")
-async def update_user(user_id: int, username: str, email:str, db: Session = Depends(get_db)):
+async def update_user(user_id: int, username: str, email:str, password: str, db: Session = Depends(get_db)):
     """
     update a user in the database.
     """
-    user = crud.update_user(db, user_id, username, email)
+    user = crud.update_user(db, user_id, username, email, password)
     return user
